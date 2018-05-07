@@ -19,14 +19,26 @@
 #  9.9.9.9
 #  149.112.112.112
 #  taken from: https://quad9.com/microsoft/
+#
+# Background:  https://nymity.ch/dns-traffic-correlation/.
 
-- name: Check if /etc/resolv.conf contains any Google, Quad9, CloudFlare or OpenDNS DNS servers (Exits only)
-  command: 'grep -qE "(^nameserver 8\.8\.8\.8[[:space:]]*$|^nameserver 8\.8\.4\.4[[:space:]]*$|^nameserver 2001:4860:4860::8888[[:space:]]*$|^nameserver 2001:4860:4860::8844[[:space:]]*$|^nameserver 2001:4860:4860:0:0:0:0:8888[[:space:]]*$|^nameserver 2001:4860:4860:0:0:0:0:8888[[:space:]]*$|^nameserver 208\.67\.222\.123[[:space:]]*$|^nameserver 208\.67\.220\.123[[:space:]]*$|^nameserver 1\.1\.1\.1[[:space:]]*$|^nameserver 1\.0\.0\.1[[:space:]]*$|^nameserver 2606:4700:4700::1111[[:space:]]*$|^nameserver 2606:4700:4700::1001[[:space:]]*$|^nameserver 9\.9\.9\.9[[:space:]]*$|^nameserver 149\.112\.112\.112[[:space:]]*$)" /etc/resolv.conf'
-  ignore_errors: yes
+- name: Abort if /etc/resolv.conf contains any Google, Quad9, CloudFlare or OpenDNS DNS servers (Exits only). Please use a local caching and DNSSEC-validating resolver! 
+  command: 'grep -qE "^nameserver {{ item }}[[:space:]]*$" /etc/resolv.conf'
+  with_items:
+    - 8\.8\.8\.8
+    - 8\.8\.4\.4
+    - 2001:4860:4860::8888
+    - 2001:4860:4860::8844
+    - 2001:4860:4860:0:0:0:0:8888
+    - 2001:4860:4860:0:0:0:0:8844
+    - 208\.67\.222\.123
+    - 208\.67\.220\.123
+    - 1\.1\.1\.1
+    - 1\.0\.0\.1
+    - 2606:4700:4700::1111
+    - 2606:4700:4700::1001
+    - 9\.9\.9\.9
+    - 149\.112\.112\.112
   register: dns_check
-
-- name: Abort if Google, Quad9, CloudFlare or OpenDNS DNS servers are in use (Exits only)
-  assert:
-    that:
-      - "dns_check.rc != 0"
-    msg: "You are using Google, Quad9, CloudFlare or OpenDNS DNS servers on an exit relay, please use a local caching and DNSSEC-validating resolver instead. Aborting! Background: https://nymity.ch/dns-traffic-correlation/"
+  failed_when: "dns_check.rc == 0"
+  changed_when: False
