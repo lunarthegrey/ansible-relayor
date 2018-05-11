@@ -17,10 +17,21 @@
 #
 # Quad9 DNS IPs:
 #  9.9.9.9
+#  9.9.9.10
+#  149.112.112.10
 #  149.112.112.112
 #  taken from: https://quad9.com/microsoft/
 #
+# Level 3
+#  4.2.2.1-6
+#
+# Potential future candidates:
+# ----------------------------
+#
+# ISC.org: 204.152.184.76
+#
 # Background:  https://nymity.ch/dns-traffic-correlation/.
+# https://medium.com/@nusenu/who-controls-tors-dns-traffic-a74a7632e8ca
 
 - name: Abort if /etc/resolv.conf contains any Google, Quad9, CloudFlare or OpenDNS DNS servers (Exits only). Please use a local caching and DNSSEC-validating resolver! 
   command: 'grep -qE "^nameserver {{ item }}[[:space:]]*$" /etc/resolv.conf'
@@ -38,7 +49,10 @@
     - 2606:4700:4700::1111
     - 2606:4700:4700::1001
     - 9\.9\.9\.9
+    - 9\.9\.9\.10
+    - 149\.112\.112\.10
     - 149\.112\.112\.112
+    - 4\.2\.2\.[1-6]
   register: dns_check
   failed_when: "dns_check.rc == 0"
   changed_when: False
